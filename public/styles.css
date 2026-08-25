@@ -315,6 +315,26 @@ h3 {
   text-shadow: 0 0 18px #8b6cff88;
 }
 
+.share-link-box {
+  margin-top: 14px;
+  text-align: center;
+}
+
+.share-link-text {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  word-break: break-all;
+  margin-bottom: 10px;
+}
+
+.share-link-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .room-status-row {
   display: flex;
   align-items: center;

@@ -571,6 +571,7 @@
     stopPolling();
     lastRolesSignature = "";
     el("host-room-code").textContent = code;
+    el("host-share-link").textContent = joinUrl(code);
     showScreen("host");
     try {
       // A brand-new room can take a moment to become visible, so the first
@@ -585,15 +586,32 @@
     pollTimer = setInterval(() => pollHost(code, hostToken), POLL_MS);
   }
 
-  el("btn-copy-code").addEventListener("click", async () => {
-    const code = el("host-room-code").textContent;
+  function joinUrl(code) {
+    return `${location.origin}${location.pathname}?join=${encodeURIComponent(code)}`;
+  }
+
+  el("btn-copy-link").addEventListener("click", async () => {
+    const url = el("host-share-link").textContent;
     try {
-      await navigator.clipboard.writeText(code);
-      showToast("Código copiado", true);
+      await navigator.clipboard.writeText(url);
+      showToast("Enlace copiado", true);
     } catch {
-      showToast(`Código: ${code}`);
+      showToast(url);
     }
   });
+
+  if (navigator.share) {
+    el("btn-share-link").classList.remove("hidden");
+    el("btn-share-link").addEventListener("click", async () => {
+      const url = el("host-share-link").textContent;
+      const code = el("host-room-code").textContent;
+      try {
+        await navigator.share({ title: "Lobos y Aldeanos", text: `Únete a mi sala (código ${code}):`, url });
+      } catch {
+        /* user cancelled the share sheet, nothing to do */
+      }
+    });
+  }
 
   el("btn-toggle-status").addEventListener("click", async () => {
     const session = loadHostSession();
@@ -975,7 +993,14 @@
     } else if (playerSession) {
       enterPlayerScreen(playerSession.code, playerSession.playerToken, playerSession.name);
     } else {
-      showScreen("home");
+      const joinCode = new URLSearchParams(location.search).get("join");
+      if (joinCode) {
+        joinCodeInput.value = joinCode.toUpperCase().replace(/[^A-Z0-9]/g, "");
+        showScreen("joinForm");
+        el("input-join-name").focus();
+      } else {
+        showScreen("home");
+      }
     }
   })();
 })();
