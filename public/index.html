@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Lobos y Aldeanos</title>
+  <meta name="description" content="Juega Lobos y Aldeanos en familia: crea una sala, comparte el código y descubre tu personaje." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐺</text></svg>" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="stars"></div>
+  <main class="app">
+    <header class="app-header">
+      <h1><span class="moon">🌕</span> Lobos <span class="amp">&amp;</span> Aldeanos</h1>
+      <p class="subtitle">El juego de mesa clásico, para jugar en familia</p>
+    </header>
+
+    <div id="toast" class="toast hidden" role="alert"></div>
+
+    <!-- HOME -->
+    <section id="screen-home" class="screen">
+      <div class="card choice-card">
+        <button id="btn-go-create" class="btn btn-primary btn-big">
+          🏠 Crear una sala
+          <small>Serás el anfitrión / narrador</small>
+        </button>
+        <button id="btn-go-join" class="btn btn-secondary btn-big">
+          🚪 Unirme a una sala
+          <small>Tienes un código de 5 letras</small>
+        </button>
+      </div>
+    </section>
+
+    <!-- JOIN FORM -->
+    <section id="screen-join-form" class="screen hidden">
+      <div class="card">
+        <button class="btn-link btn-back" data-back>← Volver</button>
+        <h2>Unirme a una sala</h2>
+        <label class="field">
+          <span>Código de la sala</span>
+          <input id="input-join-code" type="text" maxlength="5" autocomplete="off" autocapitalize="characters" placeholder="EJ: A7K2M" />
+        </label>
+        <label class="field">
+          <span>Tu nombre</span>
+          <input id="input-join-name" type="text" maxlength="30" autocomplete="off" placeholder="¿Cómo te llamas?" />
+        </label>
+        <button id="btn-join-submit" class="btn btn-primary">Unirme y recibir mi personaje</button>
+      </div>
+    </section>
+
+    <!-- HOST SCREEN -->
+    <section id="screen-host" class="screen hidden">
+      <div class="card">
+        <div class="room-code-box">
+          <span class="room-code-label">Código de la sala</span>
+          <span id="host-room-code" class="room-code">------</span>
+          <button id="btn-copy-code" class="btn-link" title="Copiar código">📋 Copiar</button>
+        </div>
+        <p class="hint">Comparte este código con tu familia para que se unan.</p>
+
+        <div class="room-status-row">
+          <span id="host-status-badge" class="badge badge-open">Sala abierta</span>
+          <div class="host-status-actions">
+            <button id="btn-toggle-status" class="btn btn-small">Cerrar sala</button>
+            <button id="btn-reset-room" class="btn btn-small btn-warn">Nueva ronda</button>
+          </div>
+        </div>
+
+        <h3>Personajes habilitados</h3>
+        <p class="hint">Al unirse, cada jugador recibe al azar uno de los personajes que actives aquí.</p>
+        <div id="roles-config" class="roles-config"></div>
+
+        <div class="players-header">
+          <h3>Jugadores en la sala (<span id="host-player-count">0</span>)</h3>
+          <label class="toggle-reveal">
+            <input id="toggle-reveal-roles" type="checkbox" />
+            <span>Ver personajes asignados</span>
+          </label>
+        </div>
+        <ul id="host-player-list" class="player-list"></ul>
+
+        <button class="btn-link btn-leave" data-leave-host>Salir y cerrar mi sesión de anfitrión</button>
+      </div>
+    </section>
+
+    <!-- PLAYER SCREEN -->
+    <section id="screen-player" class="screen hidden">
+      <div class="card">
+        <p class="hint">Sala <strong id="player-room-code">------</strong> · jugando como <strong id="player-name">-</strong></p>
+
+        <div id="reveal-wrap" class="reveal-wrap">
+          <div id="reveal-card" class="reveal-card">
+            <div class="reveal-face reveal-front">
+              <span class="reveal-emoji">🌑</span>
+              <p>Toca para ver tu personaje</p>
+            </div>
+            <div class="reveal-face reveal-back">
+              <span id="reveal-emoji-big" class="reveal-emoji-big">🐺</span>
+              <h2 id="reveal-role-name">-</h2>
+              <p id="reveal-role-desc" class="reveal-role-desc"></p>
+            </div>
+          </div>
+        </div>
+        <p class="warn-text">🤫 No muestres esta pantalla a los demás jugadores.</p>
+
+        <h3>Jugadores en la sala (<span id="player-player-count">0</span>)</h3>
+        <ul id="player-player-list" class="player-list"></ul>
+
+        <button class="btn-link btn-leave" data-leave-player>Salir de la sala</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>
