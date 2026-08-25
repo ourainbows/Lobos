@@ -270,8 +270,15 @@
 
   let currentHostState = null;
 
+  let hostFetchSeq = 0;
+
   async function fetchHostState(code, hostToken) {
+    const seq = ++hostFetchSeq;
     const data = await api(`/api/get-room?code=${encodeURIComponent(code)}&hostToken=${encodeURIComponent(hostToken)}`);
+    // Polling and post-action refreshes can overlap; if a newer fetch already
+    // started, this response is stale (it may resolve after the newer one)
+    // and rendering it would flicker the UI back to an older phase/state.
+    if (seq !== hostFetchSeq) return;
     currentHostState = data;
 
     const badge = el("host-status-badge");
@@ -674,8 +681,15 @@
     });
   }
 
+  let playerFetchSeq = 0;
+
   async function fetchPlayerState(code, playerToken) {
+    const seq = ++playerFetchSeq;
     const data = await api(`/api/get-room?code=${encodeURIComponent(code)}&playerToken=${encodeURIComponent(playerToken)}`);
+    // Same overlapping-request guard as the host screen: discard a response
+    // if a newer fetch has already been kicked off, so the UI never flickers
+    // back to a stale phase/state while waiting for the latest one.
+    if (seq !== playerFetchSeq) return;
     document.body.classList.toggle("phase-day", data.phase === "day");
 
     if (data.phase === "lobby") {
