@@ -1,6 +1,6 @@
-import { getStore } from "@netlify/blobs";
 import { defaultRolesConfig } from "./_shared/roles.mjs";
 import { json } from "./_shared/http.mjs";
+import { getRoomsStore } from "./_shared/store.mjs";
 
 const CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
@@ -15,7 +15,7 @@ function randomCode(length = 5) {
 export default async (req) => {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
 
-  const store = getStore("rooms");
+  const store = getRoomsStore();
 
   let code = randomCode();
   for (let attempts = 0; attempts < 10; attempts++) {

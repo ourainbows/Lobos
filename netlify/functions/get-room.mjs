@@ -1,6 +1,6 @@
-import { getStore } from "@netlify/blobs";
 import { ROLE_DEFS } from "./_shared/roles.mjs";
 import { json } from "./_shared/http.mjs";
+import { getRoomsStore } from "./_shared/store.mjs";
 
 export default async (req) => {
   const url = new URL(req.url);
@@ -10,7 +10,7 @@ export default async (req) => {
 
   if (!code) return json({ error: "Falta el código de sala" }, 400);
 
-  const store = getStore("rooms");
+  const store = getRoomsStore();
   const room = await store.get(code, { type: "json" });
   if (!room) return json({ error: "No existe ninguna sala con ese código" }, 404);
 

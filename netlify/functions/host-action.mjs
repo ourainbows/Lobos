@@ -1,5 +1,5 @@
-import { getStore } from "@netlify/blobs";
 import { json } from "./_shared/http.mjs";
+import { getRoomsStore } from "./_shared/store.mjs";
 
 export default async (req) => {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
@@ -15,7 +15,7 @@ export default async (req) => {
   const { hostToken, action } = body;
   if (!code || !hostToken || !action) return json({ error: "Faltan datos" }, 400);
 
-  const store = getStore("rooms");
+  const store = getRoomsStore();
   const room = await store.get(code, { type: "json" });
   if (!room) return json({ error: "No existe ninguna sala con ese código" }, 404);
   if (room.hostToken !== hostToken) return json({ error: "No autorizado" }, 403);

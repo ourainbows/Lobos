@@ -60,6 +60,21 @@
     }
   }
 
+  function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  async function withRetry(fn, attempts = 4, delayMs = 450) {
+    for (let i = 0; i < attempts; i++) {
+      try {
+        return await fn();
+      } catch (err) {
+        if (i === attempts - 1) throw err;
+        await sleep(delayMs);
+      }
+    }
+  }
+
   function saveHostSession(data) {
     localStorage.setItem(STORAGE_HOST, JSON.stringify(data));
   }
@@ -192,17 +207,21 @@
 
   let currentHostState = null;
 
+  async function fetchHostState(code, hostToken) {
+    const data = await api(`/api/get-room?code=${encodeURIComponent(code)}&hostToken=${encodeURIComponent(hostToken)}`);
+    currentHostState = data;
+    renderRolesConfigIfChanged(data.roles, hostToken, code);
+    renderHostPlayerList(data.players, el("toggle-reveal-roles").checked);
+    const badge = el("host-status-badge");
+    const closed = data.status === "closed";
+    badge.textContent = closed ? "Sala cerrada" : "Sala abierta";
+    badge.className = "badge " + (closed ? "badge-closed" : "badge-open");
+    el("btn-toggle-status").textContent = closed ? "Abrir sala" : "Cerrar sala";
+  }
+
   async function pollHost(code, hostToken) {
     try {
-      const data = await api(`/api/get-room?code=${encodeURIComponent(code)}&hostToken=${encodeURIComponent(hostToken)}`);
-      currentHostState = data;
-      renderRolesConfigIfChanged(data.roles, hostToken, code);
-      renderHostPlayerList(data.players, el("toggle-reveal-roles").checked);
-      const badge = el("host-status-badge");
-      const closed = data.status === "closed";
-      badge.textContent = closed ? "Sala cerrada" : "Sala abierta";
-      badge.className = "badge " + (closed ? "badge-closed" : "badge-open");
-      el("btn-toggle-status").textContent = closed ? "Abrir sala" : "Cerrar sala";
+      await fetchHostState(code, hostToken);
     } catch (err) {
       stopPolling();
       showToast(err.message);
@@ -219,12 +238,21 @@
     renderRolesConfig(roles, hostToken, code);
   }
 
-  function enterHostScreen(code, hostToken) {
+  async function enterHostScreen(code, hostToken) {
     stopPolling();
     lastRolesSignature = "";
     el("host-room-code").textContent = code;
     showScreen("host");
-    pollHost(code, hostToken);
+    try {
+      // A brand-new room can take a moment to become visible, so the first
+      // load retries a few times instead of immediately bailing to home.
+      await withRetry(() => fetchHostState(code, hostToken));
+    } catch (err) {
+      showToast(err.message);
+      clearHostSession();
+      showScreen("home");
+      return;
+    }
     pollTimer = setInterval(() => pollHost(code, hostToken), POLL_MS);
   }
 
@@ -299,16 +327,20 @@
     });
   }
 
+  async function fetchPlayerState(code, playerToken) {
+    const data = await api(`/api/get-room?code=${encodeURIComponent(code)}&playerToken=${encodeURIComponent(playerToken)}`);
+    renderPlayerList(data.players);
+    if (data.me) {
+      const meta = ROLE_META[data.me.role] || {};
+      el("reveal-emoji-big").textContent = meta.emoji || "❔";
+      el("reveal-role-name").textContent = data.me.roleInfo?.name || meta.name || "-";
+      el("reveal-role-desc").textContent = data.me.roleInfo?.desc || "";
+    }
+  }
+
   async function pollPlayer(code, playerToken) {
     try {
-      const data = await api(`/api/get-room?code=${encodeURIComponent(code)}&playerToken=${encodeURIComponent(playerToken)}`);
-      renderPlayerList(data.players);
-      if (data.me) {
-        const meta = ROLE_META[data.me.role] || {};
-        el("reveal-emoji-big").textContent = meta.emoji || "❔";
-        el("reveal-role-name").textContent = data.me.roleInfo?.name || meta.name || "-";
-        el("reveal-role-desc").textContent = data.me.roleInfo?.desc || "";
-      }
+      await fetchPlayerState(code, playerToken);
     } catch (err) {
       stopPolling();
       showToast(err.message);
@@ -317,13 +349,22 @@
     }
   }
 
-  function enterPlayerScreen(code, playerToken, name) {
+  async function enterPlayerScreen(code, playerToken, name) {
     stopPolling();
     el("player-room-code").textContent = code;
     el("player-name").textContent = name;
     el("reveal-card").classList.remove("flipped");
     showScreen("player");
-    pollPlayer(code, playerToken);
+    try {
+      // Same read-after-write safety net as the host screen: retry the
+      // first load instead of bailing out on a transient miss.
+      await withRetry(() => fetchPlayerState(code, playerToken));
+    } catch (err) {
+      showToast(err.message);
+      clearPlayerSession();
+      showScreen("home");
+      return;
+    }
     pollTimer = setInterval(() => pollPlayer(code, playerToken), POLL_MS);
   }
 

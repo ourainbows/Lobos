@@ -1,6 +1,6 @@
-import { getStore } from "@netlify/blobs";
 import { pickRandomRole } from "./_shared/roles.mjs";
 import { json } from "./_shared/http.mjs";
+import { getRoomsStore } from "./_shared/store.mjs";
 
 export default async (req) => {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
@@ -19,7 +19,7 @@ export default async (req) => {
     return json({ error: "Escribe el código de la sala y tu nombre" }, 400);
   }
 
-  const store = getStore("rooms");
+  const store = getRoomsStore();
   const room = await store.get(code, { type: "json" });
   if (!room) {
     return json({ error: "No existe ninguna sala con ese código" }, 404);
