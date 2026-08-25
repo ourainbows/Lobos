@@ -314,11 +314,16 @@
   el("btn-start-game").addEventListener("click", async () => {
     const session = loadHostSession();
     if (!session) return;
+    const btn = el("btn-start-game");
+    if (btn.disabled) return;
+    btn.disabled = true;
     try {
       await gameAdvance(session.code, session.hostToken, "start");
-      pollHost(session.code, session.hostToken);
+      await pollHost(session.code, session.hostToken);
     } catch (err) {
       showToast(err.message);
+    } finally {
+      btn.disabled = false;
     }
   });
 
@@ -538,27 +543,43 @@
     resolveDayBtn.classList.toggle("hidden", data.phase !== "day");
 
     resolveNightBtn.onclick = async () => {
+      if (resolveNightBtn.disabled) return;
+      resolveNightBtn.disabled = true;
       try {
         await gameAdvance(code, hostToken, "resolve-night");
-        pollHost(code, hostToken);
+        await pollHost(code, hostToken);
       } catch (err) {
         showToast(err.message);
+      } finally {
+        resolveNightBtn.disabled = false;
       }
     };
     resolveDayBtn.onclick = async () => {
+      if (resolveDayBtn.disabled) return;
+      resolveDayBtn.disabled = true;
       try {
         await gameAdvance(code, hostToken, "resolve-day");
-        pollHost(code, hostToken);
+        await pollHost(code, hostToken);
       } catch (err) {
         showToast(err.message);
+      } finally {
+        resolveDayBtn.disabled = false;
       }
     };
   }
 
+  let hostPollFailures = 0;
+
   async function pollHost(code, hostToken) {
     try {
       await fetchHostState(code, hostToken);
+      hostPollFailures = 0;
     } catch (err) {
+      hostPollFailures++;
+      // A single dropped request (spotty wifi/cell signal) shouldn't wipe
+      // the whole session and bounce the host back to the home screen —
+      // only bail out after a few consecutive failures in a row.
+      if (hostPollFailures < 3) return;
       stopPolling();
       showToast(err.message);
       clearHostSession();
@@ -958,10 +979,17 @@
     }
   }
 
+  let playerPollFailures = 0;
+
   async function pollPlayer(code, playerToken) {
     try {
       await fetchPlayerState(code, playerToken);
+      playerPollFailures = 0;
     } catch (err) {
+      playerPollFailures++;
+      // Same tolerance as the host screen: don't wipe the session over one
+      // dropped request, only after a few in a row.
+      if (playerPollFailures < 3) return;
       stopPolling();
       showToast(err.message);
       clearPlayerSession();

@@ -231,6 +231,12 @@ h3 {
   filter: brightness(1.08);
 }
 
+.btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+  pointer-events: none;
+}
+
 .btn-big {
   display: flex;
   flex-direction: column;
