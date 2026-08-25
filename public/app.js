@@ -181,6 +181,7 @@
 
       const row = document.createElement("div");
       row.className = "role-count-row" + (count === 0 ? " zero" : "");
+      row.dataset.role = id;
       row.innerHTML = `
         <span class="emoji">${meta.emoji}</span>
         <span class="role-name-wrap">
@@ -320,6 +321,7 @@
       const meta = ROLE_META[p.role] || {};
       const tile = document.createElement("div");
       tile.className = "player-tile" + (p.alive ? "" : " dead");
+      if (p.role) tile.dataset.role = p.role;
       tile.innerHTML = `
         ${!p.alive ? '<span class="tile-badge" title="Eliminado">💀</span>' : ""}
         <span class="tile-emoji">${p.role ? meta.emoji || "❔" : "❔"}</span>
@@ -454,7 +456,7 @@
     container.innerHTML = log
       .map((e) => {
         const causeLabel = e.cause === "night" ? "🌙 noche" : e.cause === "day" ? "☀️ votación" : "🏹 cazador";
-        return `<li><span>${e.emoji || ""} ${escapeHtml(e.name)} — ${escapeHtml(e.roleName || e.role)}</span><span class="log-cause">Ronda ${e.round} · ${causeLabel}</span></li>`;
+        return `<li data-role="${e.role}"><span>${e.emoji || ""} ${escapeHtml(e.name)} — ${escapeHtml(e.roleName || e.role)}</span><span class="log-cause">Ronda ${e.round} · ${causeLabel}</span></li>`;
       })
       .join("");
   }
@@ -683,6 +685,7 @@
       return;
     }
     const meta = ROLE_META[me.role] || {};
+    wrap.dataset.role = me.role;
     let status = "";
     if (!me.alive) status += '<p class="my-role-status dead-banner">💀 Fuiste eliminado — ahora eres espectador</p>';
     if (me.loverName) status += `<p class="my-role-status lover-banner">💞 Estás enamorado de ${escapeHtml(me.loverName)}</p>`;
@@ -716,7 +719,7 @@
       container.innerHTML = `
         <h3>🐺 Elige a quién atacar</h3>
         <p class="hint">${w.packMates.length ? "Tu manada: " + w.packMates.map(escapeHtml).join(", ") : "Eres el único lobo en pie."}</p>
-        <div class="target-grid" id="wolf-targets"></div>
+        <div class="target-grid" id="wolf-targets" data-role="lobo"></div>
         ${w.tally.length ? '<p class="section-label">Cómo va la votación de la manada</p><div id="wolf-tally"></div>' : ""}`;
       const grid = container.querySelector("#wolf-targets");
       w.targets.forEach((t) => {
@@ -743,7 +746,7 @@
           <p class="hint">Ya investigaste esta noche. Podrás investigar de nuevo mañana en la noche.</p>`;
         return;
       }
-      container.innerHTML = '<h3>🔮 Investiga a un jugador</h3><div class="target-grid" id="seer-targets"></div>';
+      container.innerHTML = '<h3>🔮 Investiga a un jugador</h3><div class="target-grid" id="seer-targets" data-role="vidente"></div>';
       const grid = container.querySelector("#seer-targets");
       s.targets.forEach((t) => {
         const btn = targetButton(t, false, false);
@@ -768,7 +771,7 @@
       html += '<p class="section-label">Poción de muerte</p>';
       html += w.deathUsed
         ? '<p class="hint">Ya usaste tu poción de muerte.</p>'
-        : '<div class="target-grid" id="witch-kill-targets"></div>';
+        : '<div class="target-grid" id="witch-kill-targets" data-role="bruja"></div>';
       container.innerHTML = html;
 
       const saveBtn = container.querySelector("#btn-witch-save");
@@ -792,7 +795,7 @@
       container.innerHTML = `
         <h3>💘 Elige a los enamorados</h3>
         <p class="hint">Selecciona a dos jugadores (puedes incluirte a ti mismo).</p>
-        <div class="target-grid" id="cupid-targets"></div>
+        <div class="target-grid" id="cupid-targets" data-role="cupido"></div>
         <button type="button" class="btn btn-primary" id="btn-cupid-confirm" disabled>Confirmar pareja</button>`;
       const grid = container.querySelector("#cupid-targets");
       const confirmBtn = container.querySelector("#btn-cupid-confirm");
@@ -836,7 +839,7 @@
       renderVoteBars(container.querySelector("#player-vote-bars"), data.dayVotes, data.players);
       return;
     }
-    html += '<h3>🗳️ Vota para eliminar a alguien</h3><div class="target-grid" id="day-targets"></div>';
+    html += '<h3>🗳️ Vota para eliminar a alguien</h3><div class="target-grid" id="day-targets" data-role="aldeano"></div>';
     html += '<p class="section-label">Resultado en vivo</p><div id="player-vote-bars"></div>';
     container.innerHTML = html;
     renderDeathBanner(container.querySelector("#player-death-reveal"), data.lastNightDeaths);
@@ -863,7 +866,7 @@
   function renderPlayerCazadorView(code, playerToken, data, container) {
     if (data.me.isPendingCazador) {
       container.innerHTML =
-        '<h3>🏹 ¡Te eliminaron! Dispara antes de irte</h3><p class="hint">Elige a quién te llevas contigo.</p><div class="target-grid" id="cazador-targets"></div>';
+        '<h3>🏹 ¡Te eliminaron! Dispara antes de irte</h3><p class="hint">Elige a quién te llevas contigo.</p><div class="target-grid" id="cazador-targets" data-role="cazador"></div>';
       const grid = container.querySelector("#cazador-targets");
       data.players
         .filter((p) => p.alive)

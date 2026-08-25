@@ -15,6 +15,32 @@
   --day: #f0a94e;
   --radius: 16px;
   --font-display: "Cinzel", "Segoe UI", Georgia, serif;
+
+  --c-lobo: #ff6b6b;
+  --c-aldeano: #6fcf97;
+  --c-vidente: #7c9eff;
+  --c-bruja: #c77dff;
+  --c-cazador: #e0a94a;
+  --c-cupido: #ff8fb1;
+}
+
+[data-role="lobo"] {
+  --role-color: var(--c-lobo);
+}
+[data-role="aldeano"] {
+  --role-color: var(--c-aldeano);
+}
+[data-role="vidente"] {
+  --role-color: var(--c-vidente);
+}
+[data-role="bruja"] {
+  --role-color: var(--c-bruja);
+}
+[data-role="cazador"] {
+  --role-color: var(--c-cazador);
+}
+[data-role="cupido"] {
+  --role-color: var(--c-cupido);
 }
 
 * {
@@ -28,7 +54,7 @@ html, body {
 }
 
 body {
-  background: radial-gradient(circle at 20% -10%, #2a2f5c 0%, var(--bg-1) 55%), var(--bg-1);
+  background: radial-gradient(circle at 22% -8%, #363b74 0%, transparent 45%), radial-gradient(ellipse at 50% 115%, #241f47 0%, transparent 55%), var(--bg-1);
   color: var(--text);
   font-family: "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   min-height: 100vh;
@@ -38,7 +64,7 @@ body {
 }
 
 body.phase-day {
-  background: radial-gradient(circle at 20% -10%, #3a3560 0%, #1a1530 55%), #150f26;
+  background: radial-gradient(circle at 22% -8%, #6b4a24 0%, transparent 45%), radial-gradient(ellipse at 50% 115%, #3a2a12 0%, transparent 55%), #1a1530;
 }
 
 .sky {
@@ -332,8 +358,9 @@ h3 {
   grid-template-columns: 28px 1fr auto;
   align-items: center;
   gap: 10px;
-  background: #141935;
+  background: color-mix(in srgb, var(--role-color, transparent) 10%, #141935);
   border: 1px solid var(--card-border);
+  border-left: 3px solid var(--role-color, var(--card-border));
   border-radius: 10px;
   padding: 10px 12px;
   font-size: 0.9rem;
@@ -573,8 +600,15 @@ h3 {
 
 .phase-banner .phase-icon {
   font-size: 2rem;
-  display: block;
-  margin-bottom: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffffff22, transparent 70%), rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  margin-bottom: 8px;
 }
 
 .phase-banner h2 {
@@ -623,8 +657,9 @@ h3 {
 }
 
 .player-tile {
-  background: #141935;
+  background: color-mix(in srgb, var(--role-color, transparent) 9%, #141935);
   border: 1px solid var(--card-border);
+  border-top: 3px solid var(--role-color, var(--card-border));
   border-radius: 12px;
   padding: 10px 8px;
   text-align: center;
@@ -685,8 +720,7 @@ h3 {
   justify-content: space-between;
   gap: 10px;
   padding: 8px 10px;
-  background: #141935;
-  border: 1px solid var(--card-border);
+  background: rgba(255, 255, 255, 0.04);
   border-radius: 10px;
   font-size: 0.88rem;
   margin-bottom: 6px;
@@ -756,6 +790,16 @@ h3 {
   background: linear-gradient(135deg, #5a2430, #2a1418);
 }
 
+.target-grid[data-role] .target-btn:hover {
+  border-color: var(--role-color);
+}
+
+.target-grid[data-role] .target-btn.selected {
+  border-color: var(--role-color);
+  background: color-mix(in srgb, var(--role-color) 22%, #1c2142);
+  box-shadow: 0 0 0 1px var(--role-color);
+}
+
 .vote-bar-row {
   margin-bottom: 10px;
 }
@@ -786,6 +830,8 @@ h3 {
   display: flex;
   align-items: center;
   gap: 12px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--role-color, var(--accent)) 16%, var(--card-bg)), #191d3c);
+  border-color: color-mix(in srgb, var(--role-color, var(--card-border)) 50%, var(--card-border));
 }
 
 .my-role-card .my-role-emoji {
@@ -847,8 +893,9 @@ h3 {
   justify-content: space-between;
   font-size: 0.85rem;
   padding: 8px 10px;
-  background: #141935;
+  background: color-mix(in srgb, var(--role-color, transparent) 9%, #141935);
   border: 1px solid var(--card-border);
+  border-left: 3px solid var(--role-color, var(--card-border));
   border-radius: 8px;
 }
 
