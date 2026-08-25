@@ -1,11 +1,11 @@
 # Lobos y Aldeanos
 
-Web app básica para jugar "Lobos y Aldeanos" (Werewolf/Mafia) en familia. Un anfitrión crea una sala, elige qué personajes están habilitados, y comparte el código de 5 letras; cada persona que se une recibe al azar uno de los personajes activados y lo ve en una pantalla privada tipo carta.
+Web app básica para jugar "Lobos y Aldeanos" (Werewolf/Mafia) en familia. Un anfitrión crea una sala, decide cuántos personajes de cada tipo habrá (como armar el mazo de cartas físico), y comparte el código de 5 letras; cada persona que se une recibe al azar uno de los cupos que aún queden libres y lo ve en una pantalla privada tipo carta.
 
 ## Cómo funciona
 
-- **Anfitrión**: crea la sala, elige qué personajes están disponibles (Lobo, Aldeano, Vidente, Bruja, Cazador, Cupido), ve cuántos jugadores se han unido y puede cerrar la sala, iniciar una nueva ronda o revelar los personajes asignados (para narrar la partida).
-- **Jugadores**: entran con el código de la sala y su nombre, reciben un personaje al azar entre los habilitados, y lo revelan tocando su carta (pantalla privada, pensada para no compartir).
+- **Anfitrión**: crea la sala, define cuántos de cada personaje habrá (Lobo, Aldeano, Vidente, Bruja, Cazador, Cupido) con un contador +/− por personaje, ve cuántos jugadores se han unido y cuántos cupos quedan de cada tipo, y puede cerrar la sala, iniciar una nueva ronda o revelar los personajes asignados (para narrar la partida).
+- **Jugadores**: entran con el código de la sala y su nombre, reciben al azar uno de los cupos de personaje que aún estén libres (nunca se reparte más de la cantidad configurada por tipo), y lo revelan tocando su carta (pantalla privada, pensada para no compartir). Si ya no quedan cupos libres, el intento de unirse se rechaza con un mensaje claro.
 
 No implementa las fases de noche/día del juego: eso se juega de viva voz en familia, con el anfitrión como narrador. La app solo resuelve la parte tediosa (repartir personajes sin repetir cartas físicas).
 

@@ -1,4 +1,4 @@
-import { ROLE_DEFS } from "./_shared/roles.mjs";
+import { ROLE_DEFS, remainingCounts } from "./_shared/roles.mjs";
 import { json } from "./_shared/http.mjs";
 import { getRoomsStore } from "./_shared/store.mjs";
 
@@ -28,7 +28,8 @@ export default async (req) => {
   const result = {
     code: room.code,
     status: room.status,
-    roles: room.roles,
+    roleCounts: room.roleCounts,
+    remaining: remainingCounts(room.roleCounts, room.players),
     playerCount: room.players.length,
     players,
     isHost,

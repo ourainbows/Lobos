@@ -154,32 +154,78 @@
   });
 
   // ---------- HOST SCREEN ----------
-  function renderRolesConfig(roles, hostToken, code) {
+  const MAX_ROLE_COUNT = 50;
+
+  function renderRolesConfig(roleCounts, hostToken, code) {
     const wrap = el("roles-config");
     wrap.innerHTML = "";
     ROLE_ORDER.forEach((id) => {
       const meta = ROLE_META[id];
-      const enabled = Boolean(roles[id]);
-      const label = document.createElement("label");
-      label.className = "role-toggle" + (enabled ? "" : " off");
-      label.innerHTML = `<input type="checkbox" ${enabled ? "checked" : ""} data-role="${id}" />
-        <span class="emoji">${meta.emoji}</span><span>${meta.name}</span>`;
-      const input = label.querySelector("input");
-      input.addEventListener("change", async () => {
-        label.classList.toggle("off", !input.checked);
+      const count = Number(roleCounts[id]) || 0;
+
+      const row = document.createElement("div");
+      row.className = "role-count-row" + (count === 0 ? " zero" : "");
+      row.innerHTML = `
+        <span class="emoji">${meta.emoji}</span>
+        <span class="role-name-wrap">
+          <span class="role-name">${meta.name}</span>
+          <span class="role-remaining" data-remaining="${id}"></span>
+        </span>
+        <div class="stepper">
+          <button type="button" class="step-btn" data-dir="-1" aria-label="Quitar un ${meta.name}">−</button>
+          <input type="number" min="0" max="${MAX_ROLE_COUNT}" step="1" value="${count}" data-role="${id}" inputmode="numeric" />
+          <button type="button" class="step-btn" data-dir="1" aria-label="Agregar un ${meta.name}">+</button>
+        </div>`;
+
+      const input = row.querySelector("input");
+      // Tracked separately from input.value: by the time a "change" event
+      // fires, the input already shows the new number, so we can't use it
+      // as "the old value" to detect whether anything actually changed.
+      let committedValue = count;
+
+      const commit = async (nextValue) => {
+        const clamped = Math.max(0, Math.min(MAX_ROLE_COUNT, Math.round(nextValue) || 0));
+        if (clamped === committedValue) {
+          input.value = committedValue;
+          return;
+        }
+        const prev = committedValue;
+        input.value = clamped;
+        row.classList.toggle("zero", clamped === 0);
         try {
           await api("/api/update-roles", {
             method: "POST",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ code, hostToken, roles: { [id]: input.checked } }),
+            body: JSON.stringify({ code, hostToken, roleCounts: { [id]: clamped } }),
           });
+          committedValue = clamped;
         } catch (err) {
-          input.checked = !input.checked;
-          label.classList.toggle("off", !input.checked);
+          committedValue = prev;
+          input.value = prev;
+          row.classList.toggle("zero", prev === 0);
           showToast(err.message);
         }
+      };
+
+      input.addEventListener("change", () => commit(Number(input.value)));
+      row.querySelectorAll(".step-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const dir = Number(btn.dataset.dir);
+          commit((Number(input.value) || 0) + dir);
+        });
       });
-      wrap.appendChild(label);
+
+      wrap.appendChild(row);
+    });
+  }
+
+  function updateRemainingLabels(remaining) {
+    ROLE_ORDER.forEach((id) => {
+      const label = document.querySelector(`[data-remaining="${id}"]`);
+      if (label) {
+        const n = remaining?.[id] ?? 0;
+        label.textContent = n > 0 ? `${n} libre${n === 1 ? "" : "s"}` : "sin cupo";
+      }
     });
   }
 
@@ -210,8 +256,11 @@
   async function fetchHostState(code, hostToken) {
     const data = await api(`/api/get-room?code=${encodeURIComponent(code)}&hostToken=${encodeURIComponent(hostToken)}`);
     currentHostState = data;
-    renderRolesConfigIfChanged(data.roles, hostToken, code);
+    renderRolesConfigIfChanged(data.roleCounts, hostToken, code);
+    updateRemainingLabels(data.remaining);
     renderHostPlayerList(data.players, el("toggle-reveal-roles").checked);
+    const totalSlots = ROLE_ORDER.reduce((sum, id) => sum + (Number(data.roleCounts?.[id]) || 0), 0);
+    el("host-total-slots").textContent = totalSlots;
     const badge = el("host-status-badge");
     const closed = data.status === "closed";
     badge.textContent = closed ? "Sala cerrada" : "Sala abierta";

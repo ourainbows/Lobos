@@ -1,4 +1,4 @@
-import { pickRandomRole } from "./_shared/roles.mjs";
+import { pickRoleFromRemaining, remainingCounts } from "./_shared/roles.mjs";
 import { json } from "./_shared/http.mjs";
 import { getRoomsStore } from "./_shared/store.mjs";
 
@@ -31,9 +31,17 @@ export default async (req) => {
     return json({ error: "Ya hay alguien en la sala con ese nombre, elige otro" }, 409);
   }
 
+  const remaining = remainingCounts(room.roleCounts, room.players);
+  const role = pickRoleFromRemaining(remaining);
+  if (!role) {
+    return json(
+      { error: "La sala ya alcanzó el cupo de personajes, pídele al anfitrión que habilite más" },
+      403
+    );
+  }
+
   const playerId = crypto.randomUUID();
   const playerToken = crypto.randomUUID();
-  const role = pickRandomRole(room.roles);
 
   room.players.push({
     id: playerId,

@@ -1,4 +1,4 @@
-import { defaultRolesConfig } from "./_shared/roles.mjs";
+import { defaultRoleCounts } from "./_shared/roles.mjs";
 import { json } from "./_shared/http.mjs";
 import { getRoomsStore } from "./_shared/store.mjs";
 
@@ -30,7 +30,7 @@ export default async (req) => {
     hostToken,
     status: "open",
     createdAt: Date.now(),
-    roles: defaultRolesConfig(),
+    roleCounts: defaultRoleCounts(),
     players: [],
   };
 
