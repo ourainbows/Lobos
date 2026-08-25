@@ -4,12 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Lobos y Aldeanos</title>
-  <meta name="description" content="Juega Lobos y Aldeanos en familia: crea una sala, comparte el código y descubre tu personaje." />
+  <meta name="description" content="Juega Lobos y Aldeanos en familia: crea una sala, comparte el código, descubre tu personaje y juega noches y votaciones completas." />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐺</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-  <div class="stars"></div>
+  <div class="sky"></div>
+  <div class="hill"></div>
   <main class="app">
     <header class="app-header">
       <h1><span class="moon">🌕</span> Lobos <span class="amp">&amp;</span> Aldeanos</h1>
@@ -51,13 +55,12 @@
 
     <!-- HOST SCREEN -->
     <section id="screen-host" class="screen hidden">
-      <div class="card">
+      <div class="card room-card">
         <div class="room-code-box">
           <span class="room-code-label">Código de la sala</span>
           <span id="host-room-code" class="room-code">------</span>
           <button id="btn-copy-code" class="btn-link" title="Copiar código">📋 Copiar</button>
         </div>
-        <p class="hint">Comparte este código con tu familia para que se unan.</p>
 
         <div class="room-status-row">
           <span id="host-status-badge" class="badge badge-open">Sala abierta</span>
@@ -66,6 +69,11 @@
             <button id="btn-reset-room" class="btn btn-small btn-warn">Nueva ronda</button>
           </div>
         </div>
+      </div>
+
+      <!-- LOBBY: role setup + waiting room -->
+      <div id="host-lobby-panel" class="card">
+        <p class="hint">Comparte el código con tu familia para que se unan.</p>
 
         <h3>Personajes en la partida</h3>
         <p class="hint">Elige cuántos de cada personaje habrá. Cada jugador que se une recibe al azar uno de los cupos que aún queden libres.</p>
@@ -80,15 +88,34 @@
         </div>
         <ul id="host-player-list" class="player-list"></ul>
 
-        <button class="btn-link btn-leave" data-leave-host>Salir y cerrar mi sesión de anfitrión</button>
+        <button id="btn-start-game" class="btn btn-primary btn-start">🌙 Iniciar partida</button>
+        <p id="start-game-hint" class="hint start-hint"></p>
       </div>
+
+      <!-- GAME: night/day/votes/ended god view -->
+      <div id="host-game-panel" class="hidden">
+        <div id="host-phase-banner" class="phase-banner"></div>
+        <div class="card">
+          <div id="host-players-grid" class="players-grid"></div>
+        </div>
+        <div id="host-night-view" class="card hidden"></div>
+        <div id="host-day-view" class="card hidden"></div>
+        <div id="host-cazador-view" class="card hidden"></div>
+        <div id="host-ended-view" class="card hidden"></div>
+        <div class="host-advance-row">
+          <button id="btn-resolve-night" class="btn btn-primary hidden">🌅 Resolver noche</button>
+          <button id="btn-resolve-day" class="btn btn-primary hidden">🗳️ Cerrar votación y resolver</button>
+        </div>
+      </div>
+
+      <button class="btn-link btn-leave" data-leave-host>Salir y cerrar mi sesión de anfitrión</button>
     </section>
 
     <!-- PLAYER SCREEN -->
     <section id="screen-player" class="screen hidden">
-      <div class="card">
-        <p class="hint">Sala <strong id="player-room-code">------</strong> · jugando como <strong id="player-name">-</strong></p>
+      <p class="hint player-topline">Sala <strong id="player-room-code">------</strong> · jugando como <strong id="player-name">-</strong></p>
 
+      <div id="player-lobby-panel" class="card">
         <div id="reveal-wrap" class="reveal-wrap">
           <div id="reveal-card" class="reveal-card">
             <div class="reveal-face reveal-front">
@@ -106,9 +133,21 @@
 
         <h3>Jugadores en la sala (<span id="player-player-count">0</span>)</h3>
         <ul id="player-player-list" class="player-list"></ul>
-
-        <button class="btn-link btn-leave" data-leave-player>Salir de la sala</button>
+        <p class="hint">Esperando a que el anfitrión inicie la partida…</p>
       </div>
+
+      <div id="player-game-panel" class="hidden">
+        <div id="player-phase-banner" class="phase-banner"></div>
+
+        <div id="player-my-card" class="card my-role-card"></div>
+
+        <div id="player-action-view" class="card hidden"></div>
+        <div id="player-vote-view" class="card hidden"></div>
+        <div id="player-cazador-view" class="card hidden"></div>
+        <div id="player-ended-view" class="card hidden"></div>
+      </div>
+
+      <button class="btn-link btn-leave" data-leave-player>Salir de la sala</button>
     </section>
   </main>
 

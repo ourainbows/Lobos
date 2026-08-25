@@ -1,6 +1,7 @@
 import { defaultRoleCounts } from "./_shared/roles.mjs";
 import { json } from "./_shared/http.mjs";
 import { getRoomsStore } from "./_shared/store.mjs";
+import { freshDayState, freshNightState } from "./_shared/game.mjs";
 
 const CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
@@ -32,6 +33,16 @@ export default async (req) => {
     createdAt: Date.now(),
     roleCounts: defaultRoleCounts(),
     players: [],
+    phase: "lobby",
+    round: 0,
+    winner: null,
+    night: freshNightState(),
+    day: freshDayState(),
+    pendingCazadorIds: [],
+    afterShotsPhase: null,
+    eliminationLog: [],
+    lastNightDeaths: [],
+    lastDayElimination: null,
   };
 
   await store.setJSON(code, room);

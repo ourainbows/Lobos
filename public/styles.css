@@ -10,7 +10,11 @@
   --accent-3: #4caf82;
   --danger: #ff6b6b;
   --warn: #e0a94a;
+  --wolf: #ff6b6b;
+  --village: #4caf82;
+  --day: #f0a94e;
   --radius: 16px;
+  --font-display: "Cinzel", "Segoe UI", Georgia, serif;
 }
 
 * {
@@ -26,13 +30,18 @@ html, body {
 body {
   background: radial-gradient(circle at 20% -10%, #2a2f5c 0%, var(--bg-1) 55%), var(--bg-1);
   color: var(--text);
-  font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
+  transition: background 0.6s ease;
 }
 
-.stars {
+body.phase-day {
+  background: radial-gradient(circle at 20% -10%, #3a3560 0%, #1a1530 55%), #150f26;
+}
+
+.sky {
   position: fixed;
   inset: 0;
   pointer-events: none;
@@ -47,6 +56,27 @@ body {
   background-size: 360px 260px;
   opacity: 0.6;
   z-index: 0;
+  transition: opacity 0.6s ease;
+}
+
+body.phase-day .sky {
+  opacity: 0.15;
+}
+
+.hill {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 20vh;
+  min-height: 140px;
+  pointer-events: none;
+  z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 220' preserveAspectRatio='none'%3E%3Cpath d='M0,220 L0,110 C100,70 200,130 320,95 C420,68 500,120 620,90 C740,62 840,110 960,85 C1060,65 1140,100 1200,80 L1200,220 Z' fill='%23161a35'/%3E%3Cg fill='%230f1226'%3E%3Cpolygon points='120,110 150,55 180,110'/%3E%3Cpolygon points='150,95 180,45 210,95'/%3E%3Cpolygon points='940,100 968,50 996,100'/%3E%3Cpolygon points='980,90 1008,45 1036,90'/%3E%3Crect x='420' y='95' width='34' height='24'/%3E%3Cpolygon points='413,95 437,72 461,95'/%3E%3Crect x='700' y='85' width='30' height='22'/%3E%3Cpolygon points='694,85 715,64 736,85'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: bottom center;
+  background-size: 100% 100%;
+  opacity: 0.9;
 }
 
 .app {
@@ -63,6 +93,8 @@ body {
 }
 
 .app-header h1 {
+  font-family: var(--font-display);
+  font-weight: 800;
   font-size: 1.9rem;
   margin: 0 0 4px;
   letter-spacing: 0.5px;
@@ -103,10 +135,22 @@ body {
 
 h2 {
   margin-top: 0;
+  font-family: var(--font-display);
+  letter-spacing: 0.3px;
 }
 
 h3 {
   margin-bottom: 6px;
+  font-family: var(--font-display);
+  letter-spacing: 0.3px;
+  font-size: 1.05rem;
+}
+
+#screen-host > * + *,
+#screen-player > * + *,
+#host-game-panel > * + *,
+#player-game-panel > * + * {
+  margin-top: 14px;
 }
 
 .hint {
@@ -511,6 +555,344 @@ h3 {
 
 .toast.hidden {
   display: none;
+}
+
+/* ---------- GAME BOARD ---------- */
+
+.hidden {
+  display: none !important;
+}
+
+.phase-banner {
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  text-align: center;
+  border: 1px solid var(--card-border);
+  box-shadow: 0 10px 30px #00000055;
+}
+
+.phase-banner .phase-icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.phase-banner h2 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.phase-banner p {
+  margin: 4px 0 0;
+  color: var(--text-dim);
+  font-size: 0.88rem;
+}
+
+.phase-banner-night {
+  background: linear-gradient(160deg, #23265a, #14152c);
+}
+
+.phase-banner-day {
+  background: linear-gradient(160deg, #6b4a1e, #3a2a12);
+  border-color: #7a5a2a;
+}
+
+.phase-banner-day h2 {
+  color: #ffd68a;
+}
+
+.phase-banner-cazador {
+  background: linear-gradient(160deg, #5a1e28, #2a1014);
+  border-color: #7a2a34;
+}
+
+.phase-banner-ended {
+  background: linear-gradient(160deg, #3a2f0e, #1f1a0a);
+  border-color: var(--warn);
+}
+
+.phase-banner-ended h2 {
+  color: var(--warn);
+  font-size: 1.5rem;
+}
+
+.players-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 8px;
+}
+
+.player-tile {
+  background: #141935;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 10px 8px;
+  text-align: center;
+  font-size: 0.8rem;
+  position: relative;
+}
+
+.player-tile .tile-emoji {
+  font-size: 1.4rem;
+  display: block;
+}
+
+.player-tile .tile-name {
+  display: block;
+  margin-top: 2px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player-tile .tile-role {
+  display: block;
+  color: var(--text-dim);
+  font-size: 0.72rem;
+}
+
+.player-tile.dead {
+  opacity: 0.5;
+}
+
+.player-tile.dead .tile-name {
+  text-decoration: line-through;
+}
+
+.player-tile .tile-badge {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 0.75rem;
+}
+
+.section-label {
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin: 14px 0 8px;
+}
+
+.section-label:first-child {
+  margin-top: 0;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  background: #141935;
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  font-size: 0.88rem;
+  margin-bottom: 6px;
+}
+
+.info-row .info-label {
+  color: var(--text-dim);
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #141935;
+  border: 1px solid var(--card-border);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.82rem;
+  margin: 0 6px 6px 0;
+}
+
+.status-pill.ready {
+  border-color: var(--accent-3);
+  color: var(--accent-3);
+}
+
+.target-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.target-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: #141935;
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+
+.target-btn:active {
+  transform: scale(0.98);
+}
+
+.target-btn.selected {
+  border-color: var(--accent);
+  background: linear-gradient(135deg, #382a6e, #221d47);
+}
+
+.target-btn .target-badge {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  font-weight: 400;
+}
+
+.target-btn.danger.selected {
+  border-color: var(--wolf);
+  background: linear-gradient(135deg, #5a2430, #2a1418);
+}
+
+.vote-bar-row {
+  margin-bottom: 10px;
+}
+
+.vote-bar-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  margin-bottom: 4px;
+}
+
+.vote-bar-track {
+  height: 10px;
+  border-radius: 999px;
+  background: #141935;
+  border: 1px solid var(--card-border);
+  overflow: hidden;
+}
+
+.vote-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #6a4fd1);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.my-role-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.my-role-card .my-role-emoji {
+  font-size: 2.2rem;
+}
+
+.my-role-card .my-role-name {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.my-role-card .my-role-status {
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  margin: 2px 0 0;
+}
+
+.dead-banner {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.lover-banner {
+  color: #ff8fb1;
+}
+
+.death-reveal {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #2a1418;
+  border: 1px solid #4a2028;
+  border-radius: 10px;
+  margin-bottom: 8px;
+}
+
+.death-reveal .emoji {
+  font-size: 1.4rem;
+}
+
+.death-reveal.peaceful {
+  background: #14231c;
+  border-color: #245038;
+}
+
+.elimination-log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.elimination-log li {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  padding: 8px 10px;
+  background: #141935;
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+}
+
+.elimination-log .log-cause {
+  color: var(--text-dim);
+  font-size: 0.78rem;
+}
+
+.winner-banner {
+  text-align: center;
+  padding: 8px 0 4px;
+}
+
+.winner-banner .winner-emoji {
+  font-size: 3rem;
+  display: block;
+}
+
+.winner-banner h2 {
+  font-size: 1.6rem;
+  margin: 6px 0 2px;
+}
+
+.host-advance-row {
+  display: flex;
+  justify-content: center;
+}
+
+.host-advance-row .btn {
+  width: 100%;
+}
+
+.btn-start {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.start-hint {
+  text-align: center;
+  margin: 8px 0 0;
+}
+
+.player-topline {
+  text-align: center;
 }
 
 @media (max-width: 380px) {

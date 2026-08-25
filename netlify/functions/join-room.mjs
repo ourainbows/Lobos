@@ -27,6 +27,9 @@ export default async (req) => {
   if (room.status === "closed") {
     return json({ error: "El anfitrión cerró la sala, ya no se aceptan más jugadores" }, 403);
   }
+  if (room.phase !== "lobby") {
+    return json({ error: "La partida ya comenzó, no se puede unir a mitad de juego" }, 403);
+  }
   if (room.players.some((p) => p.name.toLowerCase() === name.toLowerCase())) {
     return json({ error: "Ya hay alguien en la sala con ese nombre, elige otro" }, 409);
   }
@@ -49,6 +52,8 @@ export default async (req) => {
     role,
     token: playerToken,
     joinedAt: Date.now(),
+    alive: true,
+    loverId: null,
   });
 
   await store.setJSON(code, room);

@@ -1,5 +1,6 @@
 import { json } from "./_shared/http.mjs";
 import { getRoomsStore } from "./_shared/store.mjs";
+import { freshDayState, freshNightState } from "./_shared/game.mjs";
 
 export default async (req) => {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
@@ -27,7 +28,20 @@ export default async (req) => {
   } else if (action === "reset") {
     room.players = [];
     room.status = "open";
+    room.phase = "lobby";
+    room.round = 0;
+    room.winner = null;
+    room.night = freshNightState();
+    room.day = freshDayState();
+    room.pendingCazadorIds = [];
+    room.afterShotsPhase = null;
+    room.eliminationLog = [];
+    room.lastNightDeaths = [];
+    room.lastDayElimination = null;
   } else if (action === "kick") {
+    if (room.phase !== "lobby") {
+      return json({ error: "No puedes quitar jugadores con la partida ya empezada" }, 400);
+    }
     const playerId = body.playerId;
     room.players = room.players.filter((p) => p.id !== playerId);
   } else {
